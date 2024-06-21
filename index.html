@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toggle</title>
+  </head>
+  <body>
+    <main>
+      <p>
+        This page demo making toggle button with transition animation as web
+        component.
+      </p>
+      <p>
+        It is built in a single html file, you can easily inspect the source
+        code to learn from it.
+      </p>
+
+      <toggle-button>
+        <span slot="label">Spicy</span>
+      </toggle-button>
+
+      <toggle-button active>
+        <span slot="label">Sweet</span>
+      </toggle-button>
+    </main>
+
+    <template name="toggle-button">
+      <style>
+        .toggle-button {
+          --size: 2rem;
+        }
+        @media screen and (max-width: 480px) {
+          .toggle-button {
+            --size: 3rem;
+          }
+        }
+        .toggle-button {
+          background-color: #0008;
+          height: var(--size);
+          width: calc(var(--size) / 3 * 5);
+          border-radius: var(--size);
+          cursor: pointer;
+          border: 0;
+          padding: 0;
+          display: flex;
+        }
+        .toggle-button--pin {
+          background-color: #ccccccff;
+          height: var(--size);
+          width: var(--size);
+          border-radius: var(--size);
+          transition: transform 0.3s, background-color 0.3s;
+          transform: translateX(0);
+        }
+        .toggle-button.active .toggle-button--pin {
+          background-color: #33ff33ff;
+          transform: translateX(calc(var(--size) / 3 * 2));
+        }
+
+        .toggle-button--field {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin: 0.5rem;
+        }
+      </style>
+      <div class="toggle-button--field">
+        <button class="toggle-button">
+          <div class="toggle-button--pin"></div>
+        </button>
+        <div class="toggle-button--label">
+          <slot name="label">Label</slot>
+        </div>
+      </div>
+    </template>
+
+    <script>
+      class ToggleButton extends HTMLElement {
+        constructor() {
+          super()
+          let shadowRoot = this.attachShadow({ mode: 'open' })
+          let template = document.querySelector(
+            'template[name="toggle-button"]',
+          )
+          shadowRoot.appendChild(template.content.cloneNode(true))
+        }
+        get button() {
+          return this.shadowRoot.querySelector('.toggle-button')
+        }
+        connectedCallback() {
+          this.button.addEventListener('click', event => this.toggle())
+          requestAnimationFrame(() => {
+            this.active = this.hasAttribute('active')
+          })
+        }
+        toggle() {
+          this.active = !this.active
+        }
+        get active() {
+          return this.button.classList.contains('active')
+        }
+        set active(value) {
+          let button = this.button
+          if (value) {
+            button.classList.add('active')
+            this.setAttribute('active', '')
+          } else {
+            button.classList.remove('active')
+            this.removeAttribute('active')
+          }
+          button.setAttribute('aria-pressed', !!value)
+        }
+      }
+      customElements.define('toggle-button', ToggleButton)
+    </script>
+  </body>
+</html>
